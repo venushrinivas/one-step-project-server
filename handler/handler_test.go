@@ -52,7 +52,7 @@ func (preferences *MockPreferences) SetDevicePreferences(devicePreferences []dat
 }
 
 func GetNewPreferences() *MockPreferences {
-	return &MockPreferences{NumberOfRows: -1, SortColumn: "device_name", Ascending: true, DevicePreferences: []data.DevicePreferences{}}
+	return &MockPreferences{NumberOfRows: -1, SortColumn: "display_name", Ascending: true, DevicePreferences: []data.DevicePreferences{}}
 }
 
 func TestPreferencesHandler_POST(t *testing.T) {

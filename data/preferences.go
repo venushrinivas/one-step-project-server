@@ -32,7 +32,7 @@ type PreferencesImpl struct {
 const PreferencesFile = "preferences.json"
 
 func GetNewPreferences() *PreferencesImpl {
-	return &PreferencesImpl{NumberOfRows: -1, SortColumn: "device_name", Ascending: true, DevicePreferences: []DevicePreferences{}}
+	return &PreferencesImpl{NumberOfRows: -1, SortColumn: "display_name", Ascending: true, DevicePreferences: []DevicePreferences{}}
 }
 
 func (preferences *PreferencesImpl) Load() error {
