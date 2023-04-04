@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"main/data"
 	"net/http"
@@ -88,8 +87,6 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	enableCors(w)
 	if r.Method == http.MethodPost {
 		file, header, err := r.FormFile("file")
-		if header != nil {
-		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -98,21 +95,21 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		queryParams := r.URL.Query()
 		deviceId := queryParams.Get("device_id")
 		// Create a directory if it doesn't exist
-		err = os.MkdirAll("images", os.ModePerm)
+		err = h.FileSystem.MkdirAll("images", os.ModePerm)
 		if err != nil {
 			log.Println(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		imageFilePath := "images/" + deviceId + filepath.Ext(header.Filename)
-		serverFile, err := os.Create(imageFilePath)
+		serverFile, err := h.FileSystem.Create(imageFilePath)
 		defer serverFile.Close()
 		if err != nil {
 			log.Println(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		_, err = io.Copy(serverFile, file)
+		_, err = h.FileSystem.Copy(serverFile, file)
 		if err != nil {
 			log.Println(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)

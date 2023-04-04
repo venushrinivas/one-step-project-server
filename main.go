@@ -31,7 +31,7 @@ func main() {
 		log.Fatal("Error occurred while checking for preferences" + err.Error())
 	}
 	http.HandleFunc("/images/", handler.ImageHandler)
-	apiHandler := handler.NewHandler(preferences, &http.Client{})
+	apiHandler := handler.NewHandler(preferences, &http.Client{}, &handler.FileSystem{})
 	http.HandleFunc("/devices", apiHandler.DevicesHandler)
 	http.HandleFunc("/preferences", apiHandler.PreferencesHandler)
 	http.HandleFunc("/upload", apiHandler.Upload)

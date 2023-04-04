@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"io"
 	"io/ioutil"
 	"main/data"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -57,7 +60,7 @@ func GetNewPreferences() *MockPreferences {
 
 func TestPreferencesHandler_POST(t *testing.T) {
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{})
+	apiHandler := NewHandler(preferences, &http.Client{}, nil)
 	var jsonStr = []byte(`{"sort_column":"lat","ascending":false,"number_of_rows":10,"device_preferences":[{"device_id":"abc123","display_name":"Device 1","hidden":false,"image":""}]}`)
 
 	formBuf := new(bytes.Buffer)
@@ -95,7 +98,7 @@ func TestPreferencesHandler_POST(t *testing.T) {
 // Testing by giving invalid json
 func TestPreferencesHandlerError_POST(t *testing.T) {
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{})
+	apiHandler := NewHandler(preferences, &http.Client{}, nil)
 	var jsonStr = []byte(`{"sort_column":"lat","ascending":false,"number_of_rows":10,"device_preferences":[{"device_id":"abc123","display_name":"Device 1","hidden":false,"image":""]}`)
 
 	formBuf := new(bytes.Buffer)
@@ -123,7 +126,7 @@ func TestPreferencesHandlerError_POST(t *testing.T) {
 func TestPreferencesHandlerError_InvalidMethods(t *testing.T) {
 	formBuf := new(bytes.Buffer)
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{})
+	apiHandler := NewHandler(preferences, &http.Client{}, nil)
 	req, _ := http.NewRequest("PUT", "/preferences", formBuf)
 	rr := httptest.NewRecorder()
 	handlerFunc := http.HandlerFunc(apiHandler.PreferencesHandler)
@@ -153,7 +156,7 @@ func TestPreferencesHandler_GET(t *testing.T) {
 	}
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
-	apiHandler := NewHandler(preferences, mockClient)
+	apiHandler := NewHandler(preferences, mockClient, nil)
 	formBuf := new(bytes.Buffer)
 	req, _ := http.NewRequest("GET", "/preferences", formBuf)
 	rr := httptest.NewRecorder()
@@ -163,6 +166,90 @@ func TestPreferencesHandler_GET(t *testing.T) {
 
 	assert.Equal(t, `{"sort_column":"display_name","ascending":true,"number_of_rows":5,"device_preferences":[{"device_id":"1","display_name":"Test 1","hidden":false,"image":""}]}`+"\n", rr.Body.String())
 
+}
+
+type FileSystemMock struct {
+}
+
+func (r *FileSystemMock) MkdirAll(path string, perm os.FileMode) error {
+	return nil
+}
+
+func (r *FileSystemMock) Create(name string) (*os.File, error) {
+	serverFileName = "/" + name
+	return &os.File{}, nil
+}
+
+var serverFileName string
+var uploadedFileContent string
+
+func (r *FileSystemMock) Copy(dst *os.File, src multipart.File) (written int64, err error) {
+	Buf := make([]byte, 9)
+	src.Read(Buf)
+	uploadedFileContent = string(Buf)
+	return 0, nil
+}
+
+func TestUpload_POST(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	apiHandler := NewHandler(preferences, nil, &FileSystemMock{})
+	handlerFunc := http.HandlerFunc(apiHandler.Upload)
+
+	// Create a mock file to upload
+	file, err := os.CreateTemp("", "*.jpg")
+	if err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
+	defer os.Remove(file.Name())
+	_, err = file.Write([]byte("test-data"))
+	if err != nil {
+		t.Fatalf("failed to write test file: %v", err)
+	}
+	fileName := file.Name()
+	file.Close()
+
+	file, err = os.Open(fileName)
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", filepath.Base(file.Name()))
+	if err != nil {
+		t.Fatalf("failed to create form file: %v", err)
+	}
+	_, err = io.Copy(part, file)
+	file.Close()
+	if err != nil {
+		t.Fatalf("failed to write form file: %v", err)
+	}
+	writer.Close()
+
+	// Create a new POST request to the test server with the mock request body
+	req, err := http.NewRequest("POST", "/upload?device_id=1", body)
+
+	if err != nil {
+		t.Fatalf("failed to create POST request: %v", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	rr := httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	// Decode the response body into a Response struct
+	var resp Response
+	err = json.NewDecoder(rr.Body).Decode(&resp)
+	if err != nil {
+		t.Fatalf("failed to decode response body: %v", err)
+	}
+
+	// Check the response message
+	expectedMessage := "/images/1.jpg"
+	assert.Equal(t, expectedMessage, resp.Message)
+
+	assert.Equal(t, "test-data", uploadedFileContent)
+	assert.Equal(t, expectedMessage, serverFileName)
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response
