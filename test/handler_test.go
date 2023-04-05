@@ -1,4 +1,4 @@
-package handler
+package test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"main/data"
+	"main/handler"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -60,7 +61,7 @@ func GetNewPreferences() *MockPreferences {
 
 func TestPreferencesHandler_POST(t *testing.T) {
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{}, nil)
+	apiHandler := handler.NewHandler(preferences, &http.Client{}, nil)
 	var jsonStr = []byte(`{"sort_column":"lat","ascending":false,"number_of_rows":10,"device_preferences":[{"device_id":"abc123","display_name":"Device 1","hidden":false,"image":""}]}`)
 
 	formBuf := new(bytes.Buffer)
@@ -83,7 +84,7 @@ func TestPreferencesHandler_POST(t *testing.T) {
 	handlerFunc.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 
-	var response Response
+	var response handler.Response
 	err = json.NewDecoder(rr.Body).Decode(&response)
 	assert.NoError(t, err)
 	assert.Equal(t, "Request processed successfully", response.Message)
@@ -98,7 +99,7 @@ func TestPreferencesHandler_POST(t *testing.T) {
 // Testing by giving invalid json
 func TestPreferencesHandlerError_POST(t *testing.T) {
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{}, nil)
+	apiHandler := handler.NewHandler(preferences, &http.Client{}, nil)
 	var jsonStr = []byte(`{"sort_column":"lat","ascending":false,"number_of_rows":10,"device_preferences":[{"device_id":"abc123","display_name":"Device 1","hidden":false,"image":""]}`)
 
 	formBuf := new(bytes.Buffer)
@@ -126,7 +127,7 @@ func TestPreferencesHandlerError_POST(t *testing.T) {
 func TestPreferencesHandlerError_InvalidMethods(t *testing.T) {
 	formBuf := new(bytes.Buffer)
 	var preferences = GetNewPreferences()
-	apiHandler := NewHandler(preferences, &http.Client{}, nil)
+	apiHandler := handler.NewHandler(preferences, &http.Client{}, nil)
 	req, _ := http.NewRequest("PUT", "/preferences", formBuf)
 	rr := httptest.NewRecorder()
 	handlerFunc := http.HandlerFunc(apiHandler.PreferencesHandler)
@@ -156,7 +157,7 @@ func TestPreferencesHandler_GET(t *testing.T) {
 	}
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
-	apiHandler := NewHandler(preferences, mockClient, nil)
+	apiHandler := handler.NewHandler(preferences, mockClient, nil)
 	formBuf := new(bytes.Buffer)
 	req, _ := http.NewRequest("GET", "/preferences", formBuf)
 	rr := httptest.NewRecorder()
@@ -184,8 +185,7 @@ var serverFileName string
 var uploadedFileContent string
 
 func (r *FileSystemMock) Copy(dst *os.File, src multipart.File) (written int64, err error) {
-	Buf := make([]byte, 9)
-	src.Read(Buf)
+	Buf, err := io.ReadAll(src)
 	uploadedFileContent = string(Buf)
 	return 0, nil
 }
@@ -193,23 +193,10 @@ func (r *FileSystemMock) Copy(dst *os.File, src multipart.File) (written int64, 
 func TestUpload_POST(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
-	apiHandler := NewHandler(preferences, nil, &FileSystemMock{})
+	apiHandler := handler.NewHandler(preferences, nil, &FileSystemMock{})
 	handlerFunc := http.HandlerFunc(apiHandler.Upload)
 
-	// Create a mock file to upload
-	file, err := os.CreateTemp("", "*.jpg")
-	if err != nil {
-		t.Fatalf("failed to create test file: %v", err)
-	}
-	defer os.Remove(file.Name())
-	_, err = file.Write([]byte("test-data"))
-	if err != nil {
-		t.Fatalf("failed to write test file: %v", err)
-	}
-	fileName := file.Name()
-	file.Close()
-
-	file, err = os.Open(fileName)
+	file, err := os.Open("images/default.png")
 
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
@@ -238,18 +225,38 @@ func TestUpload_POST(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	// Decode the response body into a Response struct
-	var resp Response
+	var resp handler.Response
 	err = json.NewDecoder(rr.Body).Decode(&resp)
 	if err != nil {
 		t.Fatalf("failed to decode response body: %v", err)
 	}
 
 	// Check the response message
-	expectedMessage := "/images/1.jpg"
+	expectedMessage := "/images/1.png"
 	assert.Equal(t, expectedMessage, resp.Message)
 
-	assert.Equal(t, "test-data", uploadedFileContent)
+	expectedFileContent, err := os.ReadFile("images/default.png")
+
+	assert.Equal(t, string(expectedFileContent), uploadedFileContent)
 	assert.Equal(t, expectedMessage, serverFileName)
+}
+
+func TestImage_GET(t *testing.T) {
+	formBuf := new(bytes.Buffer)
+	req, _ := http.NewRequest("GET", "/images/default.png", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc := http.HandlerFunc(handler.ImageHandler)
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "image/png", rr.Header().Get("Content-Type"))
+
+	expectedImage, err := os.ReadFile("images/default.png")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	actualContent := rr.Body.Bytes()
+
+	assert.Equal(t, expectedImage, actualContent)
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response
