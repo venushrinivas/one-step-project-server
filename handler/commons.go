@@ -9,6 +9,7 @@ import (
 )
 
 const OneStepDeviceApiUrl = "https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=%s"
+const DefaultImagePath = "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png"
 
 type ApiResponse struct {
 	Devices []Device `json:"result_list"`
@@ -38,7 +39,7 @@ func (r *FileSystem) MkdirAll(path string, perm os.FileMode) error {
 }
 
 func (r *FileSystem) Create(name string) (*os.File, error) {
-	return &os.File{}, nil
+	return os.Create(name)
 }
 
 func (r *FileSystem) Copy(dst *os.File, src multipart.File) (written int64, err error) {

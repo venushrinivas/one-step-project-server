@@ -159,7 +159,7 @@ func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				if !matched {
-					device.Image = "/images/default.png"
+					device.Image = DefaultImagePath
 					visibleDevices = append(visibleDevices, device)
 				}
 			}

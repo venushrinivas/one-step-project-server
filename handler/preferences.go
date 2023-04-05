@@ -60,7 +60,7 @@ func (h *Handler) PreferencesHandler(w http.ResponseWriter, r *http.Request) {
 				DeviceID:    device.DeviceID,
 				DisplayName: device.DisplayName,
 				Hidden:      false,
-				Image:       "/images/default.png",
+				Image:       DefaultImagePath,
 			}
 			for _, devicePreference := range h.Preferences.GetDevicePreferences() {
 				if devicePreference.DeviceID == device.DeviceID {
