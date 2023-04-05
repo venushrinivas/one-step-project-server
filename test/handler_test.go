@@ -259,6 +259,243 @@ func TestImage_GET(t *testing.T) {
 	assert.Equal(t, expectedImage, actualContent)
 }
 
+func TestImage_OtherMethods(t *testing.T) {
+	formBuf := new(bytes.Buffer)
+	req, _ := http.NewRequest("POST", "/images/default.png", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc := http.HandlerFunc(handler.ImageHandler)
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("PUT", "/images/default.png", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("PATCH", "/images/default.png", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("DELETE", "/images/default.png", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+}
+
+func TestDevicesHandlerPagination_GET(t *testing.T) {
+	expected, err := os.ReadFile("api_response.json")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	mockClient := &http.Client{
+		Transport: RoundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(expected)),
+				Header:     make(http.Header),
+			}
+		}),
+	}
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	apiHandler := handler.NewHandler(preferences, mockClient, nil)
+	formBuf := new(bytes.Buffer)
+	req, _ := http.NewRequest("GET", "/devices?page=1", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc := http.HandlerFunc(apiHandler.DevicesHandler)
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	expectedBytes, err := os.ReadFile("device_response_1.json")
+	dst := &bytes.Buffer{}
+
+	json.Compact(dst, expectedBytes)
+
+	assert.Equal(t, dst.String()+"\n", rr.Body.String())
+
+	req, _ = http.NewRequest("GET", "/devices?page=2", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	expectedBytes, err = os.ReadFile("device_response_2.json")
+	dst = &bytes.Buffer{}
+
+	json.Compact(dst, expectedBytes)
+
+	assert.Equal(t, dst.String()+"\n", rr.Body.String())
+}
+
+func TestDevicesHandlerAllRows_GET(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_3.json")
+}
+
+func TestDevicesHandler_SortDisplayName(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_3.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_name_descending.json")
+}
+
+func TestDevicesHandler_SortDeviceID(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "device_id", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_deviceid_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_deviceid_dsc.json")
+}
+
+func TestDevicesHandler_SortActiveState(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "active_state", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_active_state_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_active_state_dsc.json")
+}
+
+func TestDevicesHandler_SortOnline(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "online", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_online_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_online_dsc.json")
+}
+
+func TestDevicesHandler_SortLatitude(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "lat", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_lat_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_lat_dsc.json")
+}
+
+func TestDevicesHandler_SortLongitude(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "lng", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_lng_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_lng_dsc.json")
+}
+
+func TestDevicesHandler_SortAltitude(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "altitude", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_altitude_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_altitude_dsc.json")
+}
+
+func TestDevicesHandler_SortDriveStatus(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "drive_status", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	testDevicesHelper(t, preferences, "device_response_drive_status_asc.json")
+
+	preferences.Ascending = false
+	testDevicesHelper(t, preferences, "device_response_drive_status_dsc.json")
+}
+
+func TestDevicesHandler_OtherMethods(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	apiHandler := handler.NewHandler(preferences, nil, nil)
+	formBuf := new(bytes.Buffer)
+	handlerFunc := http.HandlerFunc(apiHandler.DevicesHandler)
+	req, _ := http.NewRequest("POST", "/devices?page=2", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("PUT", "/devices?page=2", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("PATCH", "/devices?page=2", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+
+	req, _ = http.NewRequest("DELETE", "/devices?page=2", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
+}
+
+func TestDevicesHandlerInvalidPages_GET(t *testing.T) {
+	var devicePreferences []data.DevicePreferences
+	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
+	expected, err := os.ReadFile("api_response.json")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	mockClient := &http.Client{
+		Transport: RoundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(expected)),
+				Header:     make(http.Header),
+			}
+		}),
+	}
+	apiHandler := handler.NewHandler(preferences, mockClient, nil)
+	formBuf := new(bytes.Buffer)
+	handlerFunc := http.HandlerFunc(apiHandler.DevicesHandler)
+	req, _ := http.NewRequest("GET", "/devices?page=3", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, "Page does not exist\n", rr.Body.String())
+
+	req, _ = http.NewRequest("GET", "/devices?page=0", formBuf)
+	rr = httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, "Page does not exist\n", rr.Body.String())
+}
+
+func testDevicesHelper(t *testing.T, preferences data.Preferences, expectedJson string) {
+	t.Helper()
+	expected, err := os.ReadFile("api_response.json")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	mockClient := &http.Client{
+		Transport: RoundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(expected)),
+				Header:     make(http.Header),
+			}
+		}),
+	}
+	apiHandler := handler.NewHandler(preferences, mockClient, nil)
+
+	handlerFunc := http.HandlerFunc(apiHandler.DevicesHandler)
+	formBuf := new(bytes.Buffer)
+	req, _ := http.NewRequest("GET", "/devices?page=1", formBuf)
+	rr := httptest.NewRecorder()
+	handlerFunc.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	expectedBytes, err := os.ReadFile(expectedJson)
+	dst := &bytes.Buffer{}
+
+	json.Compact(dst, expectedBytes)
+
+	assert.Equal(t, dst.String()+"\n", rr.Body.String())
+}
+
 type RoundTripFunc func(req *http.Request) *http.Response
 
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {

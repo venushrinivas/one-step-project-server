@@ -1,0 +1,144 @@
+{
+  "result_list": [
+    {
+      "device_id": "1",
+      "active_state": "active",
+      "display_name": "Test 1",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 34.1611778,
+        "lng": -118.1420194,
+        "altitude": 254.58,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "2",
+      "active_state": "active",
+      "display_name": "xyz 4",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 37.1611778,
+        "lng": -116.1420194,
+        "altitude": 25.58,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "6",
+      "active_state": "inactive",
+      "display_name": "abc 1",
+      "online": false,
+      "latest_accurate_device_point": {
+        "lat": 47.7525234,
+        "lng": -122.335277,
+        "altitude": 15.21,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "9",
+      "active_state": "active",
+      "display_name": "lmn 2",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 40.785091,
+        "lng": -73.968285,
+        "altitude": 10.03,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "7",
+      "active_state": "inactive",
+      "display_name": "def 3",
+      "online": false,
+      "latest_accurate_device_point": {
+        "lat": 33.6839473,
+        "lng": -117.7946942,
+        "altitude": 30.45,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "11",
+      "active_state": "active",
+      "display_name": "opq 4",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 41.881832,
+        "lng": -87.623177,
+        "altitude": 5.78,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "5",
+      "active_state": "inactive",
+      "display_name": "uvw 5",
+      "online": false,
+      "latest_accurate_device_point": {
+        "lat": 51.5073509,
+        "lng": -0.1277583,
+        "altitude": 20.67,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "1",
+      "active_state": "active",
+      "display_name": "rst 6",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 36.1699412,
+        "lng": -115.1398296,
+        "altitude": 45.89,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "3",
+      "active_state": "inactive",
+      "display_name": "pqr 7",
+      "online": false,
+      "latest_accurate_device_point": {
+        "lat": 28.5383364,
+        "lng": -81.3792365,
+        "altitude": 18.21,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "10",
+      "active_state": "active",
+      "display_name": "hij 8",
+      "online": true,
+      "latest_accurate_device_point": {
+        "lat": 43.653226,
+        "lng": -79.3831843,
+        "altitude": 12.34,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    }
+  ]
+}

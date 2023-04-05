@@ -1,0 +1,82 @@
+{
+  "devices": [
+    {
+      "device_id": "6",
+      "display_name": "abc 1",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 47.7525234,
+        "lng": -122.335277,
+        "altitude": 15.21,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "7",
+      "display_name": "def 3",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 33.6839473,
+        "lng": -117.7946942,
+        "altitude": 30.45,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "10",
+      "display_name": "hij 8",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 43.653226,
+        "lng": -79.3831843,
+        "altitude": 12.34,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "9",
+      "display_name": "lmn 2",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 40.785091,
+        "lng": -73.968285,
+        "altitude": 10.03,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "11",
+      "display_name": "opq 4",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 41.881832,
+        "lng": -87.623177,
+        "altitude": 5.78,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    }
+  ],
+  "page_number": 1,
+  "next_page": true,
+  "previous_page": false
+}

@@ -1,0 +1,157 @@
+{
+  "devices": [
+    {
+      "device_id": "1",
+      "display_name": "Test 1",
+      "active_state": "active",
+      "online": true,
+      "image": "images/default.png",
+      "latest_accurate_device_point": {
+        "lat": 34.1611778,
+        "lng": -118.1420194,
+        "altitude": 254.58,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "1",
+      "display_name": "rst 6",
+      "active_state": "active",
+      "online": true,
+      "image": "images/default.png",
+      "latest_accurate_device_point": {
+        "lat": 36.1699412,
+        "lng": -115.1398296,
+        "altitude": 45.89,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "10",
+      "display_name": "hij 8",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 43.653226,
+        "lng": -79.3831843,
+        "altitude": 12.34,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "11",
+      "display_name": "opq 4",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 41.881832,
+        "lng": -87.623177,
+        "altitude": 5.78,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "2",
+      "display_name": "xyz 4",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 37.1611778,
+        "lng": -116.1420194,
+        "altitude": 25.58,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    },
+    {
+      "device_id": "3",
+      "display_name": "pqr 7",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 28.5383364,
+        "lng": -81.3792365,
+        "altitude": 18.21,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "5",
+      "display_name": "uvw 5",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 51.5073509,
+        "lng": -0.1277583,
+        "altitude": 20.67,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "6",
+      "display_name": "abc 1",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 47.7525234,
+        "lng": -122.335277,
+        "altitude": 15.21,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "7",
+      "display_name": "def 3",
+      "active_state": "inactive",
+      "online": false,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 33.6839473,
+        "lng": -117.7946942,
+        "altitude": 30.45,
+        "device_state": {
+          "drive_status": "on"
+        }
+      }
+    },
+    {
+      "device_id": "9",
+      "display_name": "lmn 2",
+      "active_state": "active",
+      "online": true,
+      "image": "https://cdn4.iconfinder.com/data/icons/BRILLIANT/transportation/png/400/muscle_car.png",
+      "latest_accurate_device_point": {
+        "lat": 40.785091,
+        "lng": -73.968285,
+        "altitude": 10.03,
+        "device_state": {
+          "drive_status": "off"
+        }
+      }
+    }
+  ],
+  "page_number": 1,
+  "next_page": false,
+  "previous_page": false
+}
