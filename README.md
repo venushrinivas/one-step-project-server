@@ -12,5 +12,5 @@ following are the list of APIs supported by the server side of the app.
 ## How to run the program
 1. Clone this repository.
 2. Set the API_KEY environment variable with the corresponding value for the one step api key.
-3. From the root folder, run the command go build, this will generate an executable file.
+3. From the root folder, run the command *go build*, this will generate an executable file.
 4. Run the executable file to start the server
