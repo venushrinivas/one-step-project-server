@@ -41,7 +41,7 @@ func GetNewPreferences() *PreferencesImpl {
 
 // Load function loads preferences from storage
 func (preferences *PreferencesImpl) Load() error {
-	file, err := os.Open("preferences.json")
+	file, err := os.Open(PreferencesFile)
 	if err != nil {
 		return err
 	}
