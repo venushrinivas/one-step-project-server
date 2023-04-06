@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// DevicePreferences Structure to store the device preferences
 type DevicePreferences struct {
 	DeviceID    string `json:"device_id"`
 	DisplayName string `json:"display_name"`
@@ -12,6 +13,7 @@ type DevicePreferences struct {
 	Image       string `json:"image"`
 }
 
+// Preferences is the interface which has methods to load and save preferences and getter/setter methods to access data
 type Preferences interface {
 	Load() error
 	Save() error
@@ -22,6 +24,7 @@ type Preferences interface {
 	GetNumberOfRows() int
 }
 
+// PreferencesImpl implements the preferences interface. Stores data related to the user preferences
 type PreferencesImpl struct {
 	SortColumn        string              `json:"sort_column"`
 	Ascending         bool                `json:"ascending"`
@@ -31,10 +34,12 @@ type PreferencesImpl struct {
 
 const PreferencesFile = "preferences.json"
 
+// GetNewPreferences function returns the default preferences
 func GetNewPreferences() *PreferencesImpl {
 	return &PreferencesImpl{NumberOfRows: -1, SortColumn: "display_name", Ascending: true, DevicePreferences: []DevicePreferences{}}
 }
 
+// Load function loads preferences from storage
 func (preferences *PreferencesImpl) Load() error {
 	file, err := os.Open("preferences.json")
 	if err != nil {
@@ -47,6 +52,7 @@ func (preferences *PreferencesImpl) Load() error {
 	return err
 }
 
+// Save function saves preferences to storage
 func (preferences *PreferencesImpl) Save() error {
 	file, err := os.Create(PreferencesFile)
 	if err != nil {

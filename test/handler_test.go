@@ -16,6 +16,7 @@ import (
 	"testing"
 )
 
+// MockPreferences for testing purpose
 type MockPreferences struct {
 	SortColumn        string                   `json:"sort_column"`
 	Ascending         bool                     `json:"ascending"`
@@ -55,10 +56,12 @@ func (preferences *MockPreferences) SetDevicePreferences(devicePreferences []dat
 	return nil
 }
 
+// GetNewPreferences function to return a new mock preferences object with default data
 func GetNewPreferences() *MockPreferences {
 	return &MockPreferences{NumberOfRows: -1, SortColumn: "display_name", Ascending: true, DevicePreferences: []data.DevicePreferences{}}
 }
 
+// TestPreferencesHandler_POST function to test the POST request of preferences api
 func TestPreferencesHandler_POST(t *testing.T) {
 	var preferences = GetNewPreferences()
 	apiHandler := handler.NewHandler(preferences, &http.Client{}, nil)
@@ -144,6 +147,7 @@ func TestPreferencesHandlerError_InvalidMethods(t *testing.T) {
 	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
 }
 
+// TestPreferencesHandler_GET function to test the GET request of preferences api
 func TestPreferencesHandler_GET(t *testing.T) {
 	expected := []byte(`{"result_list":[{"device_id":"1","active_state":"active","display_name":"Test 1","online":true,"device_state":{"drive_status":"off"},"latest_accurate_device_point":{"lat":34.1611778,"lng":-118.1420194,"altitude":254.58}}]}`)
 	mockClient := &http.Client{
@@ -169,6 +173,7 @@ func TestPreferencesHandler_GET(t *testing.T) {
 
 }
 
+// Mocking the file system for test
 type FileSystemMock struct {
 }
 
@@ -190,6 +195,7 @@ func (r *FileSystemMock) Copy(dst *os.File, src multipart.File) (written int64, 
 	return 0, nil
 }
 
+// Test for the upload api
 func TestUpload_POST(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -241,6 +247,7 @@ func TestUpload_POST(t *testing.T) {
 	assert.Equal(t, expectedMessage, serverFileName)
 }
 
+// Test for get image api
 func TestImage_GET(t *testing.T) {
 	formBuf := new(bytes.Buffer)
 	req, _ := http.NewRequest("GET", "/images/default.png", formBuf)
@@ -259,6 +266,7 @@ func TestImage_GET(t *testing.T) {
 	assert.Equal(t, expectedImage, actualContent)
 }
 
+// test for other methods of image api
 func TestImage_OtherMethods(t *testing.T) {
 	formBuf := new(bytes.Buffer)
 	req, _ := http.NewRequest("POST", "/images/default.png", formBuf)
@@ -283,6 +291,7 @@ func TestImage_OtherMethods(t *testing.T) {
 	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
 }
 
+// Test device api get with pagination
 func TestDevicesHandlerPagination_GET(t *testing.T) {
 	expected, err := os.ReadFile("api_response.json")
 	if err != nil {
@@ -327,12 +336,14 @@ func TestDevicesHandlerPagination_GET(t *testing.T) {
 	assert.Equal(t, dst.String()+"\n", rr.Body.String())
 }
 
+// Test get method of device api without pagination
 func TestDevicesHandlerAllRows_GET(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
 	testDevicesHelper(t, preferences, "device_response_3.json")
 }
 
+// Test get method of device api with data sorted by display name
 func TestDevicesHandler_SortDisplayName(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -342,6 +353,7 @@ func TestDevicesHandler_SortDisplayName(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_name_descending.json")
 }
 
+// Test get method of device api with data sorted by device id
 func TestDevicesHandler_SortDeviceID(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "device_id", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -351,6 +363,7 @@ func TestDevicesHandler_SortDeviceID(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_deviceid_dsc.json")
 }
 
+// Test get method of device api with data sorted by active state
 func TestDevicesHandler_SortActiveState(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "active_state", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -360,6 +373,7 @@ func TestDevicesHandler_SortActiveState(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_active_state_dsc.json")
 }
 
+// Test get method of device api with data sorted by online field
 func TestDevicesHandler_SortOnline(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "online", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -369,6 +383,7 @@ func TestDevicesHandler_SortOnline(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_online_dsc.json")
 }
 
+// Test get method of device api with data sorted by latitude
 func TestDevicesHandler_SortLatitude(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "lat", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -378,6 +393,7 @@ func TestDevicesHandler_SortLatitude(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_lat_dsc.json")
 }
 
+// Test get method of device api with data sorted by longitude
 func TestDevicesHandler_SortLongitude(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "lng", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -387,6 +403,7 @@ func TestDevicesHandler_SortLongitude(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_lng_dsc.json")
 }
 
+// Test get method of device api with data sorted by altitude
 func TestDevicesHandler_SortAltitude(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "altitude", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -396,6 +413,7 @@ func TestDevicesHandler_SortAltitude(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_altitude_dsc.json")
 }
 
+// Test get method of device api with data sorted by drive status
 func TestDevicesHandler_SortDriveStatus(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: -1, Ascending: true, SortColumn: "drive_status", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -405,6 +423,7 @@ func TestDevicesHandler_SortDriveStatus(t *testing.T) {
 	testDevicesHelper(t, preferences, "device_response_drive_status_dsc.json")
 }
 
+// Testing device api for other http methods
 func TestDevicesHandler_OtherMethods(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -432,6 +451,7 @@ func TestDevicesHandler_OtherMethods(t *testing.T) {
 	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
 }
 
+// Testing get devices api with invalid pages
 func TestDevicesHandlerInvalidPages_GET(t *testing.T) {
 	var devicePreferences []data.DevicePreferences
 	preferences := &MockPreferences{NumberOfRows: 5, Ascending: true, SortColumn: "display_name", DevicePreferences: append(devicePreferences, data.DevicePreferences{Image: "images/default.png", DeviceID: "1", Hidden: false, DisplayName: "Test 1"})}
@@ -464,6 +484,7 @@ func TestDevicesHandlerInvalidPages_GET(t *testing.T) {
 	assert.Equal(t, "Page does not exist\n", rr.Body.String())
 }
 
+// Helper method for devices api
 func testDevicesHelper(t *testing.T, preferences data.Preferences, expectedJson string) {
 	t.Helper()
 	expected, err := os.ReadFile("api_response.json")

@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+// TestDevicePreferences function to test the device preferences. Verifying load/save methods work correctly and
+// the getter methods return the correct data
 func TestDevicePreferences(t *testing.T) {
 	preferences := data.GetNewPreferences()
 	var devicePreferences []data.DevicePreferences

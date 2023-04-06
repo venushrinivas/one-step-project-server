@@ -12,27 +12,13 @@ import (
 	"strings"
 )
 
-type Device struct {
-	DeviceID          string `json:"device_id"`
-	DisplayName       string `json:"display_name"`
-	ActiveState       string `json:"active_state"`
-	Online            bool   `json:"online"`
-	Image             string `json:"image"`
-	LatestDevicePoint struct {
-		Lat          float64 `json:"lat"`
-		Lng          float64 `json:"lng"`
-		Altitude     float64 `json:"altitude"`
-		DeviceStatus struct {
-			DriveStatus string `json:"drive_status"`
-		} `json:"device_state"`
-	} `json:"latest_accurate_device_point"`
-}
-
+// SortDevice structure used for sorting devices
 type SortDevice struct {
 	devices     []Device
 	preferences data.Preferences
 }
 
+// GetDevicesResponse structure representing the data for the devices get api
 type GetDevicesResponse struct {
 	Devices      []Device `json:"devices"`
 	PageNumber   int      `json:"page_number"`
@@ -40,14 +26,17 @@ type GetDevicesResponse struct {
 	PreviousPage bool     `json:"previous_page"`
 }
 
+// Len returns the size of the devices array in SortDevice
 func (sortDevice SortDevice) Len() int {
 	return len(sortDevice.devices)
 }
 
+// Swap swaps the devices in position i with device in position j
 func (sortDevice SortDevice) Swap(i, j int) {
 	sortDevice.devices[i], sortDevice.devices[j] = sortDevice.devices[j], sortDevice.devices[i]
 }
 
+// Less returns true if device at position i is lesser than device at position j based on sort column. returns false otherwise
 func (sortDevice SortDevice) Less(i, j int) bool {
 	preferences := sortDevice.preferences
 	devices := sortDevice.devices
@@ -104,6 +93,7 @@ func (sortDevice SortDevice) Less(i, j int) bool {
 	return false
 }
 
+// sortDevices helper method for sorting the devices based on user preferences
 func sortDevices(devices []Device, preferences data.Preferences) []Device {
 	sortDevice := SortDevice{
 		devices:     devices,
@@ -113,18 +103,22 @@ func sortDevices(devices []Device, preferences data.Preferences) []Device {
 	return sortDevice.devices
 }
 
+// DevicesHandler handler method for the get request for the devices api. Accepts a request and response object.
 func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 	preferences := h.Preferences
 	enableCors(w)
 	if r.Method == http.MethodGet {
+		// Constructing the api url by appending the api key
 		apiUrl := fmt.Sprintf(OneStepDeviceApiUrl, os.Getenv("API_KEY"))
 		res, err := h.httpClient.Get(apiUrl)
 
+		// Checking if the api call had an error, and if it has sending the error in response
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// Extracting the page number query param from the url
 		queryParams := r.URL.Query()
 		page, err := strconv.Atoi(queryParams.Get("page"))
 
@@ -138,6 +132,7 @@ func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 		defer res.Body.Close()
 		var resultList ApiResponse
 
+		// Decoding the response and deserializing into the resultList object
 		err = json.NewDecoder(res.Body).Decode(&resultList)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -145,6 +140,8 @@ func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		var visibleDevices []Device
+
+		// Appending the individual device preferences to the response
 		if preferences.GetDevicePreferences() != nil {
 			visibleDevices = make([]Device, 0)
 			for _, device := range resultList.Devices {
@@ -169,8 +166,10 @@ func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 		var devicesResponse GetDevicesResponse
 		devicesResponse.PageNumber = page
 
+		// Sorting the devices based on the user preferences
 		visibleDevices = sortDevices(visibleDevices, preferences)
 
+		// Handling pagination
 		if preferences.GetNumberOfRows() != -1 {
 			if (page-1)*preferences.GetNumberOfRows() >= len(visibleDevices) {
 				http.Error(w, "Page does not exist", http.StatusBadRequest)
@@ -192,8 +191,10 @@ func (h *Handler) DevicesHandler(w http.ResponseWriter, r *http.Request) {
 			devicesResponse.NextPage = false
 		}
 		devicesResponse.Devices = visibleDevices
+		// Encoding the response to json format for response
 		json.NewEncoder(w).Encode(devicesResponse)
 	} else {
+		// Handling error for all other http methods
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 	}
 }
