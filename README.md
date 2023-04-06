@@ -2,7 +2,7 @@
 ## Overview
 This is the server side code of an application that hits the one step gps devices api, fetches the response and extracts
 meaningful information from the api and provides multiple apis and functionality to interact with the data. The 
-following are the list of APIs supported by the server side of the app.
+following are the list of APIs supported by the server side of the app. The app is built on go version 1.20.
 1. GET /devices?page= - This is a get request that returns the list of devices with info like name, device id, active state, online status, drive status, latitude, longitude and altitude. The responses are sorted based on user preferences, and API also accepts a page argument which returns paginated responses.
 2. POST /preferences - This is an API to update the user preferences and individual device preferences. User preferences include sort column, sort order and number of rows for pagination. Individual device preferences include icon for the device and option to hide the device from the devices api response.
 3. GET /preferences - This is an API to retrieves the stored preferences and returns it back in the response. The preferences are same as above.
